@@ -2,6 +2,6 @@
 
 module Brok.Types.URL where
 
-import ClassyPrelude
+import RIO 
 
 type URL = Text

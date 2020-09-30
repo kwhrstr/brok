@@ -2,8 +2,7 @@
 
 module Brok.Types.Next where
 
-import ClassyPrelude
-
+import RIO
 import Brok.Types.Config (Config)
 
 data Next

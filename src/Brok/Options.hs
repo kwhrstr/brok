@@ -2,7 +2,7 @@
 
 module Brok.Options where
 
-import ClassyPrelude
+import RIO 
 
 import Brok.Parser.Options (options)
 import Brok.Types.Next     (Next)

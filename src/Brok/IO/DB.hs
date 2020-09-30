@@ -6,12 +6,12 @@ module Brok.IO.DB
     , setCached
     ) where
 
-import ClassyPrelude
-
+--import ClassyPrelude
+import RIO
+import RIO.Directory
 import Data.Either           (fromRight)
 import Data.Time.Clock.POSIX (getPOSIXTime)
-import System.Directory      (doesFileExist)
-
+import qualified RIO.Text as T 
 import Brok.Parser.DB    (db)
 import Brok.Types.Brok   (Brok, appConfig)
 import Brok.Types.Config (cache)
@@ -23,20 +23,20 @@ path = ".brokdb"
 -- time stuff
 removeOld :: Integer -> [(URL, Integer)] -> Brok [(URL, Integer)]
 removeOld age cached = do
-    timestamp <- lift getPOSIXTime
+    timestamp <- liftIO getPOSIXTime
     pure $ filter ((\val -> timestamp - val < fromInteger age) . fromInteger . snd) cached
 
 stamp :: URL -> Brok (URL, Integer)
 stamp lnk = do
-    timestamp <- lift $ round <$> getPOSIXTime
+    timestamp <- liftIO $ round <$> getPOSIXTime
     pure (lnk, timestamp)
 
 -- write db
 linkToText :: (URL, Integer) -> Text
-linkToText (lnk, int) = concat [lnk, " ", tshow int]
+linkToText (lnk, int) = T.concat [lnk, " ", textDisplay int]
 
 write :: [(URL, Integer)] -> Brok ()
-write links = writeFile path . encodeUtf8 . unlines $ linkToText <$> links
+write links = writeFileUtf8 path . T.unlines $ linkToText <$> links
 
 setCached :: [URL] -> Brok ()
 setCached links = do
@@ -50,11 +50,11 @@ setCached links = do
 
 -- read db
 read :: Integer -> FilePath -> Brok [(URL, Integer)]
-read age filepath = removeOld age =<< fromRight [] . db . decodeUtf8 <$> readFile filepath
+read age filepath = removeOld age . fromRight [] . db =<< readFileUtf8 filepath
 
 load :: Integer -> Brok [(URL, Integer)]
 load age = do
-    exists <- lift $ doesFileExist path
+    exists <- doesFileExist path
     if exists
         then read age path
         else pure []

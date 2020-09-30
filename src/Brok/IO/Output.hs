@@ -5,12 +5,13 @@ module Brok.IO.Output
     ( output
     ) where
 
-import ClassyPrelude
-
+import RIO
+import qualified RIO.Text as T 
 import Brok.IO.CLI
 import Brok.Types.Brok     (Brok)
 import Brok.Types.Document
 import Brok.Types.Link
+import Data.Text.IO (putStrLn)
 
 -- output
 linkOutput :: Link -> Brok ()
@@ -29,7 +30,7 @@ statusError (Link _ Ignored)     = False
 statusError _                    = True
 
 outputPath :: TFilePath -> Text
-outputPath path = concat ["\n", "[", path, "]"]
+outputPath path = T.concat ["\n", "[", T.pack path, "]"]
 
 outputMap :: Bool -> Document -> Brok Bool
 outputMap _ (Document path NotFound) = do
@@ -56,7 +57,7 @@ outputMap onlyFailures (Document path (Links links)) = do
                  message $ outputPath path
                  if not (null links)
                      then traverse_ linkOutput links
-                     else putStrLn "- No links found in file"
+                     else liftIO $ putStrLn "- No links found in file"
     pure anyErrs
 outputMap _ _ = pure False
 

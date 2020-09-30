@@ -4,24 +4,24 @@
 
 module Parser.DBTest where
 
-import ClassyPrelude
-
+import RIO 
+import RIO.List.Partial (last)
 import Test.Tasty
 import Test.Tasty.HUnit
 
-import Data.Either    (fromRight, isLeft)
+import Data.Either    (fromRight)
 import Data.FileEmbed (embedFile)
 
 import Brok.Parser.DB (db)
 
 content :: Text
-content = decodeUtf8 $(embedFile "test/data/.brokdb")
+content = decodeUtf8Lenient $(embedFile "test/data/.brokdb")
 
 invalid :: Text
-invalid = decodeUtf8 $(embedFile "test/data/.brokdb-invalid")
+invalid = decodeUtf8Lenient $(embedFile "test/data/.brokdb-invalid")
 
 big :: Text
-big = decodeUtf8 $(embedFile "test/data/.brokdb-big")
+big = decodeUtf8Lenient $(embedFile "test/data/.brokdb-big")
 
 test_db :: TestTree
 test_db =
@@ -45,9 +45,8 @@ test_db =
               "big file (last)"
               (assertEqual
                    "Gives back final url"
-                   (Just
-                        "https://developmentarc.gitbooks.io/react-indepth/content/life_cycle/the_life_cycle_recap.html")
-                   (fst <$> (lastMay . fromRight [] $ db big)))
+                   "https://developmentarc.gitbooks.io/react-indepth/content/life_cycle/the_life_cycle_recap.html"
+                   (fst (last . fromRight [] $ db big)))
         , testCase
               "big file (length)"
               (assertEqual "Gives back length" 142 (length $ fromRight [] (db big)))

@@ -2,8 +2,9 @@
 
 module Brok.Types.Link where
 
-import ClassyPrelude
-
+import RIO
+import RIO.List 
+import qualified RIO.Text as T 
 import           Brok.Types.URL  (URL)
 import qualified Data.Map.Strict as M (Map)
 
@@ -57,7 +58,7 @@ cachedLink :: [URL] -> Link -> Link
 cachedLink = findLink Cached (==)
 
 ignoredLink :: [URL] -> Link -> Link
-ignoredLink = findLink Ignored (flip isPrefixOf)
+ignoredLink = findLink Ignored (flip T.isPrefixOf)
 
 isSuccess :: Link -> Bool
 isSuccess (Link _ (Working _)) = True

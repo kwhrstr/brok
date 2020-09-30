@@ -5,8 +5,7 @@ module Brok.Parser.DB
     ( db
     ) where
 
-import ClassyPrelude
-
+import RIO 
 import Data.Attoparsec.Text
 
 import Brok.Parser.Links (url)

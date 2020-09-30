@@ -3,7 +3,7 @@
 
 module IO.HttpTest where
 
-import ClassyPrelude
+import RIO 
 
 import Test.Tasty
 
@@ -16,7 +16,7 @@ import Test.Tasty.HUnit
 testLink :: Text -> IO Link
 testLink lnk = do
     manager <- mkManager False
-    runReaderT (check (urlToLink lnk)) (mkApp defaultConfig manager)
+    runRIO (mkApp defaultConfig manager) (check (urlToLink lnk))
 
 test_http :: TestTree
 test_http =

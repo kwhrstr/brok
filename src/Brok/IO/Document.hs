@@ -5,17 +5,16 @@ module Brok.IO.Document
     , readContent
     ) where
 
-import ClassyPrelude
+import RIO
+import RIO.Directory
 
-import System.Directory (doesFileExist)
 
 import Brok.Types.Brok     (Brok)
 import Brok.Types.Document
 
 readContent :: TFilePath -> Brok Document
 readContent path = do
-    let filepath = unpack path
-    exists <- lift $ doesFileExist filepath
+    exists <- doesFileExist path
     if exists
-        then withContent path . decodeUtf8 <$> readFile filepath
+        then withContent path <$> readFileUtf8 path
         else pure $ notFound path

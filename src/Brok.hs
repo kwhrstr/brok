@@ -6,11 +6,13 @@ module Brok
     ( brok
     ) where
 
-import ClassyPrelude
-
+--import ClassyPrelude
+import RIO 
 import Data.FileEmbed (embedFile)
-import Data.Text.IO   (hPutStrLn)
-import System.Exit    (exitFailure, exitSuccess)
+import Data.Text.IO   (hPutStrLn, putStrLn)
+import System.Environment (getArgs)
+import qualified RIO.Text as T
+
 
 import           Data.Version               (showVersion)
 import           Language.Haskell.TH.Syntax (liftString)
@@ -27,12 +29,13 @@ import qualified Brok.Types.Config   as C (checkCerts, files, ignore, onlyFailur
 import           Brok.Types.Document (cachedLinks, checkLinks, ignoredLinks, justLinks, parseLinks)
 import           Brok.Types.Link     (getURL, isSuccess)
 import           Brok.Types.Next     (Next (..))
+import Data.Text.Encoding (decodeUtf8)
 
 go :: Brok ()
 go = do
     config <- asks appConfig
     -- read files
-    content <- traverse readContent (C.files config)
+    content <- traverse (readContent . T.unpack) (C.files config)
     -- find links in each file
     let parsed = parseLinks <$> content
     -- check cached successes
@@ -40,23 +43,23 @@ go = do
     let uncached = cachedLinks cached . ignoredLinks (C.ignore config) <$> parsed
     -- check links in each file
     header "Checking URLs"
-    putStrLn ""
+    liftIO $ putStrLn ""
     checked <- checkLinks uncached
     replace "Fetching complete"
     -- display results
-    putStrLn ""
+    liftIO $ putStrLn ""
     header "Documents"
     anyErrors <- output (C.onlyFailures config) checked
     -- cache successes
     setCached $ getURL <$> filter isSuccess (concat (justLinks <$> checked))
     -- exit with appropriate status code
-    lift $
+    liftIO $
         if anyErrors
             then void exitFailure
             else void exitSuccess
 
 putHelp :: IO ()
-putHelp = putStr $ decodeUtf8 $(embedFile "template/usage.txt")
+putHelp = putStrLn $ decodeUtf8 $(embedFile "template/usage.txt")
 
 putVersion :: IO ()
 putVersion = putStrLn $ "brök " <> $(liftString $ showVersion Paths_brok.version)
@@ -64,11 +67,11 @@ putVersion = putStrLn $ "brök " <> $(liftString $ showVersion Paths_brok.versio
 -- entry point
 brok :: IO ()
 brok = do
-    config <- parse <$> getArgs
+    config <- parse <$> fmap (map T.pack) getArgs
     case config of
         Right (Continue cnf) -> do
             manager <- mkManager (C.checkCerts cnf)
-            runReaderT go (mkApp cnf manager)
+            runRIO (mkApp cnf manager) go 
         Right Help -> putHelp
         Right Version -> putVersion
         Left _ -> do

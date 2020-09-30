@@ -3,11 +3,11 @@
 
 module Brok.IO.CLI where
 
-import ClassyPrelude
-
+import RIO
+import qualified RIO.Text as T 
 import Brok.Types.Brok     (Brok, appConfig)
 import Brok.Types.Config   (noColor)
-import Data.Text.IO        (hPutStr, hPutStrLn)
+import Data.Text.IO        (hPutStr, hPutStrLn, putStrLn)
 import System.Console.ANSI (Color (Blue, Green, Magenta, Red, Yellow), ColorIntensity (Dull),
                             ConsoleLayer (Foreground), SGR (Reset, SetColor), hClearLine,
                             hCursorUpLine, hSetSGR)
@@ -15,55 +15,55 @@ import System.Console.ANSI (Color (Blue, Green, Magenta, Red, Yellow), ColorInte
 setSGR :: Handle -> [SGR] -> Brok ()
 setSGR hndl settings = do
     colourize <- not . noColor <$> asks appConfig
-    when colourize $ lift (hSetSGR hndl settings)
+    when colourize $ liftIO (hSetSGR hndl settings)
 
 blank :: Brok ()
-blank = putStrLn ""
+blank = liftIO $ putStrLn ""
 
 message :: Text -> Brok ()
 message msg = do
     setSGR stdout [SetColor Foreground Dull Blue]
-    putStrLn msg
+    liftIO $ putStrLn msg
     setSGR stdout [Reset]
 
 mehssage :: Text -> Brok ()
 mehssage msg = do
     setSGR stdout [SetColor Foreground Dull Yellow]
-    putStrLn msg
+    liftIO $ putStrLn msg
     setSGR stdout [Reset]
 
 header :: Text -> Brok ()
 header msg = do
     setSGR stdout [SetColor Foreground Dull Magenta]
-    putStrLn $ "*** " <> msg <> " ***"
+    liftIO $ putStrLn $ "*** " <> msg <> " ***"
     setSGR stdout [Reset]
 
 successMessage :: Text -> Brok ()
 successMessage msg = do
     setSGR stdout [SetColor Foreground Dull Green]
-    putStrLn msg
+    liftIO $ putStrLn msg
     setSGR stdout [Reset]
 
 errorMessage :: Text -> Brok ()
 errorMessage msg = do
     setSGR stderr [SetColor Foreground Dull Red]
-    lift $ hPutStrLn stderr msg
+    liftIO $ hPutStrLn stderr msg
     setSGR stderr [Reset]
 
 errors :: Text -> [Text] -> Brok ()
 errors _ [] = pure ()
 errors msg missing = do
     errorMessage msg
-    lift $ hPutStrLn stderr ""
-    errorMessage (unlines $ ("- " <>) <$> missing)
+    liftIO $ hPutStrLn stderr ""
+    errorMessage (T.unlines $ ("- " <>) <$> missing)
 
 split :: Handle -> Color -> Text -> Text -> Brok ()
 split hdl color left right = do
     setSGR hdl [SetColor Foreground Dull color]
-    lift $ hPutStr hdl left
+    liftIO $ hPutStr hdl left
     setSGR hdl [Reset]
-    lift $ hPutStr hdl $ ": " <> right
-    lift $ hPutStrLn hdl ""
+    liftIO $ hPutStr hdl $ ": " <> right
+    liftIO $ hPutStrLn hdl ""
 
 splitErr :: Text -> Text -> Brok ()
 splitErr = split stderr Red
@@ -75,7 +75,7 @@ splitMeh :: Text -> Text -> Brok ()
 splitMeh = split stdout Yellow
 
 replace :: Text -> Brok ()
-replace msg = do
-    lift $ hCursorUpLine stdout 1
-    lift $ hClearLine stdout
+replace msg = liftIO $ do
+    hCursorUpLine stdout 1
+    hClearLine stdout
     putStrLn msg

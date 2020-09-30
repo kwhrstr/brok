@@ -5,8 +5,8 @@ module Brok.Parser.Options
     ( options
     ) where
 
-import ClassyPrelude
-
+import RIO
+import qualified RIO.Text as T 
 import Data.Attoparsec.Text
 
 import Brok.Parser.Attoparsec
@@ -82,4 +82,4 @@ next = helpP <|> versionP <|> (Continue <$> arguments)
 -- run parser
 options :: [Text] -> Either Text Next
 options []      = Left "No files provided"
-options content = first tshow $ parseOnly next (unlines content)
+options content = first tshow $ parseOnly next (T.unlines content)

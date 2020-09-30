@@ -1,7 +1,9 @@
 .stack-work/
 .stack-build/
+.idea
 dist-newstyle/
 brok.cabal
 releases/
 /.brokdb
+*.iml
 *~

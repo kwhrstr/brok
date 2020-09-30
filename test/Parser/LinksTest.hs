@@ -4,8 +4,7 @@
 
 module Parser.LinksTest where
 
-import ClassyPrelude
-
+import RIO 
 import Test.Tasty
 import Test.Tasty.ExpectedFailure (expectFail)
 import Test.Tasty.HUnit
@@ -15,13 +14,13 @@ import Data.FileEmbed (embedFile)
 import Brok.Parser.Links (links)
 
 markdown :: Text
-markdown = decodeUtf8 $(embedFile "test/data/links.md")
+markdown = decodeUtf8Lenient $(embedFile "test/data/links.md")
 
 complex :: Text
-complex = decodeUtf8 $(embedFile "test/data/complex.md")
+complex = decodeUtf8Lenient $(embedFile "test/data/complex.md")
 
 tex :: Text
-tex = decodeUtf8 $(embedFile "test/data/links.tex")
+tex = decodeUtf8Lenient $(embedFile "test/data/links.tex")
 
 test_parser :: TestTree
 test_parser =

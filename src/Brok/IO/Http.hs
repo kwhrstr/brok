@@ -6,9 +6,8 @@ module Brok.IO.Http
     , mkManager
     ) where
 
-import ClassyPrelude
-
-import Control.Concurrent      (threadDelay)
+import RIO 
+import qualified RIO.Text as T 
 import Network.Connection      (TLSSettings (TLSSettingsSimple))
 import Network.HTTP.Client     (HttpExceptionContent (InternalException), Manager, httpNoBody,
                                 newManager)
@@ -37,8 +36,8 @@ makeRequest :: ByteString -> URL -> Brok StatusCode
 makeRequest method url = do
     manager <- asks appTLSManager
     delay <- interval <$> asks appConfig
-    lift . try $ do
-        request <- setHeaders . setRequestMethod method <$> parseRequest (unpack url)
+    liftIO . try $ do
+        request <- setHeaders . setRequestMethod method <$> parseRequest (T.unpack url)
         threadDelay (fromIntegral delay * 1000) -- wait for a little while
         getResponseStatusCode <$> httpNoBody request manager
 

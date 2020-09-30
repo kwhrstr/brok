@@ -2,8 +2,7 @@
 
 module Brok.Types.Config where
 
-import ClassyPrelude
-
+import RIO
 import Brok.Types.URL (URL)
 
 data Config = Config

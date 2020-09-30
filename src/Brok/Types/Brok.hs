@@ -5,8 +5,7 @@ module Brok.Types.Brok
     , mkApp
     ) where
 
-import ClassyPrelude
-
+import RIO
 import Brok.Types.Config   (Config)
 import Network.HTTP.Client (Manager)
 
@@ -16,6 +15,6 @@ data App = App
     }
 
 mkApp :: Config -> Manager -> App
-mkApp config manager = App config manager
+mkApp = App
 
-type Brok a = ReaderT App IO a
+type Brok a = RIO App a

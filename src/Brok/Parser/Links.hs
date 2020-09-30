@@ -6,8 +6,7 @@ module Brok.Parser.Links
     , url
     ) where
 
-import ClassyPrelude
-
+import RIO
 import Data.Attoparsec.Text
 import Data.List            (nub)
 
@@ -31,7 +30,7 @@ parens parser = surround '(' ')' parser <|> surround '[' ']' parser
 
 -- urls
 part :: String -> Parser Text
-part str = concat <$> many1 (parens (part str) <|> manyChars (chars str))
+part str = mconcat <$> many1 (parens (part str) <|> manyChars (chars str))
 
 query :: Parser Text
 query = (<>) <$> string "?" <*> part queryBodyChars

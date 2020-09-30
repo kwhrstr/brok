@@ -3,7 +3,7 @@
 
 module OptionsTest where
 
-import ClassyPrelude
+import RIO 
 
 import Test.Tasty
 import Test.Tasty.HUnit
